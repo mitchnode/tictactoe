@@ -5,20 +5,15 @@ const gameboard = (function(){
         board[position] = player.getToken();
     }
 
-    const displayGameboard = () => {
-        console.clear();
-        console.log(board[0]," | ",board[1]," | ",board[2]);
-        console.log("--- ----- ---");
-        console.log(board[3]," | ",board[4]," | ",board[5]);
-        console.log("--- ----- ---");
-        console.log(board[6]," | ",board[7]," | ",board[8]);
-    }
-
     const getBoardPosition = (position) => {
         return board[position];
     }
 
-    return {placeToken, displayGameboard, getBoardPosition}
+    const resetBoard = () => {
+        board = [" "," "," "," "," "," "," "," "," "];
+    }
+
+    return {placeToken, getBoardPosition, resetBoard};
 })()
 
 const playerX = {
@@ -41,6 +36,7 @@ const game = {
     gameover : false,
     playerTurn : "X",
     roundCount : 1,
+    error : "",
     gameLoop(){
         while(this.gameover!=true){
             position = this.userInput(this.playerTurn);
@@ -49,17 +45,34 @@ const game = {
             } else {
                 gameboard.placeToken(playerO, position);
             }
-            gameboard.displayGameboard();
-            this.changeTurn();
+            display.displayGameboard();
+            if(this.error !== ""){
+                display.displayError();
+                break;
+            }
             this.checkGameover();
-            this.updateRound();
+            if(this.gameover !=true){
+                this.changeTurn();
+                this.updateRound();
+            } 
         }
     },
+    restartGame(){
+        gameboard.resetBoard();
+        this.roundCount = 1;
+        this.error = "";
+        this.gameover = false;
+        this.playerTurn = "X";
+        this.gameLoop();
+    },
     checkGameover(){
-        if(this.roundCount >= 3){
+        this.checkWin("X");
+        this.checkWin("O");
+        if(this.roundCount >= 9){
             this.gameover = true;
-            //Just for testing, need to test for a win or tie.
+            display.displayTie();
         }
+        
     },
     changeTurn(){
         if (this.playerTurn === "X"){
@@ -68,38 +81,91 @@ const game = {
             this.playerTurn = "X";
         }
     },
-    displayPlayer(){
-        if (this.playerTurn === "X"){
+    updateRound(){
+        this.roundCount += 1;
+        display.displayPlayer(this.playerTurn);
+    },
+    userInput(player){
+        let input = prompt(player + "'s turn, please choose a position (1-9)");
+        input = Number(input);
+        return this.checkInput(input, player);
+    },
+    checkInput(input, player){
+        if(input <= 9 && input >= 1){
+            return this.checkPosition(input - 1,player);
+        } else if (input === 0){
+            this.setError("Game Cancelled!");
+            this.gameover = true;
+        } else {
+            this.setError("Invalid entry");
+            display.displayError();
+            this.setError("");
+            return this.userInput(player);
+        }
+    },
+    checkPosition(position, player){
+        if(gameboard.getBoardPosition(position) === " "){
+            return position;
+        } else {
+            this.setError("Position already taken!");
+            display.displayError();
+            this.setError("");
+            return this.userInput(player);
+        }
+    },
+    setError(error){
+        this.error = error;
+    },
+    getError(error){
+        return this.error;
+    },
+    checkWin(player){
+        if((gameboard.getBoardPosition(0) == player && gameboard.getBoardPosition(1) == player && gameboard.getBoardPosition(2) == player) ||
+            (gameboard.getBoardPosition(3) == player && gameboard.getBoardPosition(4) == player && gameboard.getBoardPosition(5) == player) ||
+            (gameboard.getBoardPosition(6) == player && gameboard.getBoardPosition(7) == player && gameboard.getBoardPosition(8) == player) ||
+            (gameboard.getBoardPosition(0) == player && gameboard.getBoardPosition(3) == player && gameboard.getBoardPosition(6) == player) ||
+            (gameboard.getBoardPosition(1) == player && gameboard.getBoardPosition(4) == player && gameboard.getBoardPosition(7) == player) ||
+            (gameboard.getBoardPosition(2) == player && gameboard.getBoardPosition(5) == player && gameboard.getBoardPosition(8) == player) ||
+            (gameboard.getBoardPosition(0) == player && gameboard.getBoardPosition(4) == player && gameboard.getBoardPosition(8) == player) ||
+            (gameboard.getBoardPosition(2) == player && gameboard.getBoardPosition(4) == player && gameboard.getBoardPosition(6) == player)){
+            this.gameover = true;
+            display.displayWinner(player);
+        }
+    },
+     
+}
+
+const display = (function(){
+    const displayWinner = (player) => {
+        console.log("The Winner is " + player + "!");
+    }
+
+    const displayTie = () => {
+        console.log("It's a tie!");
+    }
+
+    const displayError = () => {
+        console.log(game.getError());
+    }
+
+    const displayPlayer = (playerTurn) => {
+        if (playerTurn === "X"){
             console.log("X's Turn");
         } else {
             console.log("O's Turn");
         }
-    },
-    updateRound(){
-        this.roundCount += 1;
-    },
-    userInput(player){
-        let input = prompt(player + "'s turn, please choose a position");
-        input = Number(input);
-        if(input <= 9 && input >= 0){
-            return this.checkPosition(input);
-        } else {
-            this.displayError("Invalid entry");
-            return this.userInput();
-        }
-    },
-    checkPosition(position){
-        if(gameboard.getBoardPosition(position) === " "){
-            return position;
-        } else {
-            this.displayError("Position already taken!");
-            return this.userInput();
-        }
-    },
-    displayError(error){
-        console.log(error);
     }
-    
-}
+
+    const displayGameboard = () => {
+        console.clear();
+        console.log(gameboard.getBoardPosition(0)," | ",gameboard.getBoardPosition(1)," | ",gameboard.getBoardPosition(2));
+        console.log("--- ----- ---");
+        console.log(gameboard.getBoardPosition(3)," | ",gameboard.getBoardPosition(4)," | ",gameboard.getBoardPosition(5));
+        console.log("--- ----- ---");
+        console.log(gameboard.getBoardPosition(6)," | ",gameboard.getBoardPosition(7)," | ",gameboard.getBoardPosition(8));
+    }
+
+    return {displayWinner, displayTie, displayError, displayPlayer, displayGameboard}
+})();
 
 game.gameLoop();
