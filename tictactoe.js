@@ -1,3 +1,5 @@
+
+
 const gameboard = (function(){
     let board = [" "," "," "," "," "," "," "," "," "];
 
@@ -30,20 +32,20 @@ const playerO = {
     }
 }
 
-
-
 const game = {
     gameover : false,
     playerTurn : "X",
     roundCount : 1,
     error : "",
+    position : 0,
     gameLoop(){
-        while(this.gameover!=true){
-            position = this.userInput(this.playerTurn);
+        display.createGameboard();
+        /* while(this.gameover!=true){
+            //position = this.userInput(this.playerTurn);
             if(this.playerTurn === "X"){
-                gameboard.placeToken(playerX, position);
+                gameboard.placeToken(playerX, this.position);
             } else {
-                gameboard.placeToken(playerO, position);
+                gameboard.placeToken(playerO, this.position);
             }
             display.displayGameboard();
             if(this.error !== ""){
@@ -55,7 +57,7 @@ const game = {
                 this.changeTurn();
                 this.updateRound();
             } 
-        }
+        } */
     },
     restartGame(){
         gameboard.resetBoard();
@@ -156,6 +158,19 @@ const display = (function(){
         }
     }
 
+    const createGameboard = () => {
+        const container = document.querySelector(".container");
+        const position = [];
+        for (i = 0; i <= 8; i++){
+            position[i] = document.createElement("div");
+            position[i].id = "position" + i;
+            position[i].classList = "square";
+            position[i].addEventListener('click', () => {game.checkPosition(i, playerX)});
+            container.appendChild(position[i]);
+        }
+
+    }
+
     const displayGameboard = () => {
         console.clear();
         console.log(gameboard.getBoardPosition(0)," | ",gameboard.getBoardPosition(1)," | ",gameboard.getBoardPosition(2));
@@ -165,7 +180,7 @@ const display = (function(){
         console.log(gameboard.getBoardPosition(6)," | ",gameboard.getBoardPosition(7)," | ",gameboard.getBoardPosition(8));
     }
 
-    return {displayWinner, displayTie, displayError, displayPlayer, displayGameboard}
+    return {displayWinner, displayTie, displayError, displayPlayer, createGameboard, displayGameboard}
 })();
 
 game.gameLoop();
