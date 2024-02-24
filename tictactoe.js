@@ -11,11 +11,15 @@ const gameboard = (function(){
         return board[position];
     }
 
+    const getBoardLength = () => {
+        return board.length;
+    }
+
     const resetBoard = () => {
         board = [" "," "," "," "," "," "," "," "," "];
     }
 
-    return {placeToken, getBoardPosition, resetBoard};
+    return {placeToken, getBoardPosition, getBoardLength, resetBoard};
 })()
 
 const playerX = {
@@ -83,6 +87,13 @@ const game = {
             this.playerTurn = "X";
         }
     },
+    getPlayerTurn(){
+        if (this.playerTurn == "X"){
+            return playerX;
+        } else {
+            return playerO;
+        }
+    },
     updateRound(){
         this.roundCount += 1;
         display.displayPlayer(this.playerTurn);
@@ -105,14 +116,15 @@ const game = {
             return this.userInput(player);
         }
     },
-    checkPosition(position, player){
+    checkPosition(position){
+        console.log("Position chosen: " + position);
         if(gameboard.getBoardPosition(position) === " "){
             return position;
         } else {
             this.setError("Position already taken!");
             display.displayError();
             this.setError("");
-            return this.userInput(player);
+            return false;
         }
     },
     setError(error){
@@ -161,11 +173,19 @@ const display = (function(){
     const createGameboard = () => {
         const container = document.querySelector(".container");
         const position = [];
-        for (i = 0; i <= 8; i++){
+        for (i = 0; i < gameboard.getBoardLength(); i++){
             position[i] = document.createElement("div");
-            position[i].id = "position" + i;
+            position[i].id = i;
             position[i].classList = "square";
-            position[i].addEventListener('click', () => {game.checkPosition(i, playerX)});
+            let index = i;
+            position[i].addEventListener('click', function(){
+                if(game.checkPosition(index) == index){
+                    gameboard.placeToken(game.getPlayerTurn(),index);
+                    displayGameboard();
+                    game.changeTurn();
+                }
+
+            }, false);
             container.appendChild(position[i]);
         }
 
@@ -178,6 +198,17 @@ const display = (function(){
         console.log(gameboard.getBoardPosition(3)," | ",gameboard.getBoardPosition(4)," | ",gameboard.getBoardPosition(5));
         console.log("--- ----- ---");
         console.log(gameboard.getBoardPosition(6)," | ",gameboard.getBoardPosition(7)," | ",gameboard.getBoardPosition(8));
+        
+        //TODO: Add to DOM object instead
+        const container = document.querySelector(".container");
+
+        const square = [];
+        for (i = 0; i < gameboard.getBoardLength(); i++){
+            console.log(gameboard.getBoardPosition(i))
+            square[i] = document.getElementById(i);
+            square[i].textContent = gameboard.getBoardPosition(i);
+            container.appendChild(square[i]);
+        }
     }
 
     return {displayWinner, displayTie, displayError, displayPlayer, createGameboard, displayGameboard}
