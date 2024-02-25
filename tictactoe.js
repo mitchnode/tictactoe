@@ -1,7 +1,7 @@
 
 const DOM = (function(){
     const container = document.querySelector(".container");
-    const info = document.querySelector("info");
+    const info = document.querySelector(".info");
 
     return {container, info};
 })()
@@ -93,6 +93,7 @@ const game = {
         } else {
             this.playerTurn = "X";
         }
+        display.displayPlayer(this.playerTurn);
     },
     getPlayerTurn(){
         if (this.playerTurn == "X"){
@@ -186,6 +187,13 @@ const display = (function(){
         } else {
             console.log("O's Turn");
         }
+        
+        DOM.info.innerHTML = "";
+
+        const turn = document.createElement("div");
+        turn.classList = "turn";
+        turn.textContent = playerTurn + "'s Turn";
+        DOM.info.appendChild(turn);
     }
 
     const createGameboard = () => {
@@ -207,19 +215,17 @@ const display = (function(){
             }, false);
             DOM.container.appendChild(position[i]);
         }
+        displayPlayer(game.getPlayerTurn().getToken());
 
     }
 
     const displayGameboard = () => {
-        console.clear();
+        /* console.clear();
         console.log(gameboard.getBoardPosition(0)," | ",gameboard.getBoardPosition(1)," | ",gameboard.getBoardPosition(2));
         console.log("--- ----- ---");
         console.log(gameboard.getBoardPosition(3)," | ",gameboard.getBoardPosition(4)," | ",gameboard.getBoardPosition(5));
         console.log("--- ----- ---");
-        console.log(gameboard.getBoardPosition(6)," | ",gameboard.getBoardPosition(7)," | ",gameboard.getBoardPosition(8));
-        
-        //TODO: Add to DOM object instead
-        
+        console.log(gameboard.getBoardPosition(6)," | ",gameboard.getBoardPosition(7)," | ",gameboard.getBoardPosition(8)); */
 
         const square = [];
         for (i = 0; i < gameboard.getBoardLength(); i++){
