@@ -9,12 +9,17 @@
     height: 100px;
 }
 
+.square-taken {
+    background-color: rgba(200,200,200,50);
+}
+
 .square:hover {
     background-color: rgba(200,200,200,50);
 }
 
 body {
     display: grid;
+    justify-items: center;
 }
 .container {
     margin: 20px;
@@ -24,4 +29,21 @@ body {
     justify-items:center;
     width: 308px;
     justify-self: center;
+}
+
+.startbutton {
+    width: 100px;
+    height: 50px;
+    border: solid 2px black;
+    border-radius: 10px;
+    background-color: rgba(200,200,200,50);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    grid-area: 1 / 2 / 2 / 3;
+}
+
+.startbutton:hover {
+    background-color: rgba(255,255,255,0);
+    cursor: pointer;
 }

@@ -1,4 +1,11 @@
 
+const DOM = (function(){
+    const container = document.querySelector(".container");
+    const info = document.querySelector("info");
+
+    return {container, info};
+})()
+
 
 const gameboard = (function(){
     let board = [" "," "," "," "," "," "," "," "," "];
@@ -150,6 +157,17 @@ const game = {
 }
 
 const display = (function(){
+    const initDisplay = () => {
+        const start = document.createElement("div");
+        start.classList = "startbutton";
+        start.textContent = "START";
+        start.addEventListener('click', function(){
+            DOM.container.removeChild(start);
+            game.gameLoop();
+        })
+        DOM.container.appendChild(start);
+    }
+
     const displayWinner = (player) => {
         console.log("The Winner is " + player + "!");
     }
@@ -171,22 +189,23 @@ const display = (function(){
     }
 
     const createGameboard = () => {
-        const container = document.querySelector(".container");
+        //const container = document.querySelector(".container");
         const position = [];
         for (i = 0; i < gameboard.getBoardLength(); i++){
             position[i] = document.createElement("div");
             position[i].id = i;
             position[i].classList = "square";
             let index = i;
-            position[i].addEventListener('click', function(){
+            position[i].addEventListener('click', function eventHandler(){
                 if(game.checkPosition(index) == index){
                     gameboard.placeToken(game.getPlayerTurn(),index);
+                    this.removeEventListener("click", eventHandler);
                     displayGameboard();
                     game.changeTurn();
                 }
 
             }, false);
-            container.appendChild(position[i]);
+            DOM.container.appendChild(position[i]);
         }
 
     }
@@ -200,18 +219,21 @@ const display = (function(){
         console.log(gameboard.getBoardPosition(6)," | ",gameboard.getBoardPosition(7)," | ",gameboard.getBoardPosition(8));
         
         //TODO: Add to DOM object instead
-        const container = document.querySelector(".container");
+        
 
         const square = [];
         for (i = 0; i < gameboard.getBoardLength(); i++){
             console.log(gameboard.getBoardPosition(i))
             square[i] = document.getElementById(i);
             square[i].textContent = gameboard.getBoardPosition(i);
-            container.appendChild(square[i]);
+            if (square[i].textContent !== " ") {
+                square[i].classList = "square square-taken";
+            }
+            DOM.container.appendChild(square[i]);
         }
     }
 
-    return {displayWinner, displayTie, displayError, displayPlayer, createGameboard, displayGameboard}
+    return {initDisplay, displayWinner, displayTie, displayError, displayPlayer, createGameboard, displayGameboard}
 })();
 
-game.gameLoop();
+display.initDisplay();
