@@ -47,3 +47,19 @@ body {
     background-color: rgba(255,255,255,0);
     cursor: pointer;
 }
+
+.resetbutton {
+    width: 100px;
+    height: 50px;
+    border: solid 2px black;
+    border-radius: 10px;
+    background-color: rgba(200,200,200,50);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.resetbutton:hover {
+    background-color: rgba(255,255,255,0);
+    cursor: pointer;
+}

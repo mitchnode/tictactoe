@@ -49,8 +49,11 @@ const game = {
     roundCount : 1,
     error : "",
     position : 0,
-    gameLoop(){
+    initGame(){
         display.createGameboard();
+    },
+    gameLoop(){
+        
         /* while(this.gameover!=true){
             //position = this.userInput(this.playerTurn);
             if(this.playerTurn === "X"){
@@ -76,7 +79,7 @@ const game = {
         this.error = "";
         this.gameover = false;
         this.playerTurn = "X";
-        this.gameLoop();
+        display.initDisplay();
     },
     checkGameover(){
         this.checkWin("X");
@@ -104,7 +107,6 @@ const game = {
     },
     updateRound(){
         this.roundCount += 1;
-        display.displayPlayer(this.playerTurn);
     },
     userInput(player){
         let input = prompt(player + "'s turn, please choose a position (1-9)");
@@ -125,15 +127,16 @@ const game = {
         }
     },
     checkPosition(position){
-        console.log("Position chosen: " + position);
-        if(gameboard.getBoardPosition(position) === " "){
-            return position;
-        } else {
-            this.setError("Position already taken!");
-            display.displayError();
-            this.setError("");
-            return false;
-        }
+        if(game.gameover === false){
+            if(gameboard.getBoardPosition(position) === " "){
+                return position;
+            } else {
+                this.setError("Position already taken!");
+                display.displayError();
+                this.setError("");
+                return false;
+            }
+        }       
     },
     setError(error){
         this.error = error;
@@ -159,22 +162,54 @@ const game = {
 
 const display = (function(){
     const initDisplay = () => {
+        DOM.container.innerHTML = "";
+        DOM.info.innerHTML = "";
         const start = document.createElement("div");
         start.classList = "startbutton";
         start.textContent = "START";
         start.addEventListener('click', function(){
             DOM.container.removeChild(start);
-            game.gameLoop();
+            game.initGame();
         })
         DOM.container.appendChild(start);
     }
 
+    const disableBoard = () => {
+        for (i = 0; i < gameboard.getBoardLength(); i++){
+            let square = document.getElementById(i);
+            square.classList = "square square-taken";
+        }
+        
+        const reset = document.createElement('div');
+        reset.classList = 'resetbutton';
+        reset.textContent = "Reset"
+        reset.addEventListener('click', () => {
+            game.restartGame();
+        }, {once: true})
+        DOM.info.appendChild(reset);
+    }
+
+    const displayInfo = (info) => {
+        DOM.info.innerHTML = "";
+
+        const gameinfo = document.createElement("div");
+        gameinfo.classList = "gameinfo";
+        gameinfo.textContent = info;
+        DOM.info.appendChild(gameinfo);
+    }
+
     const displayWinner = (player) => {
         console.log("The Winner is " + player + "!");
+
+        displayInfo(player + " Wins!");
+        disableBoard();
     }
 
     const displayTie = () => {
         console.log("It's a tie!");
+
+        displayInfo("It's a Tie!");
+        disableBoard();
     }
 
     const displayError = () => {
@@ -182,37 +217,25 @@ const display = (function(){
     }
 
     const displayPlayer = (playerTurn) => {
-        if (playerTurn === "X"){
-            console.log("X's Turn");
-        } else {
-            console.log("O's Turn");
-        }
-        
-        DOM.info.innerHTML = "";
-
-        const turn = document.createElement("div");
-        turn.classList = "turn";
-        turn.textContent = playerTurn + "'s Turn";
-        DOM.info.appendChild(turn);
+        displayInfo(playerTurn + "'s Turn");
     }
-
+    
     const createGameboard = () => {
-        //const container = document.querySelector(".container");
         const position = [];
         for (i = 0; i < gameboard.getBoardLength(); i++){
             position[i] = document.createElement("div");
             position[i].id = i;
             position[i].classList = "square";
             let index = i;
-            position[i].addEventListener('click', function eventHandler(){
+            position[i].addEventListener('click', () => {
                 if(game.checkPosition(index) == index){
                     gameboard.placeToken(game.getPlayerTurn(),index);
-                    this.removeEventListener("click", eventHandler);
                     displayGameboard();
                     game.changeTurn();
+                    game.checkGameover();
+                    game.updateRound();
                 }
-
-            }, false);
+            });
             DOM.container.appendChild(position[i]);
         }
         displayPlayer(game.getPlayerTurn().getToken());
@@ -229,7 +252,6 @@ const display = (function(){
 
         const square = [];
         for (i = 0; i < gameboard.getBoardLength(); i++){
-            console.log(gameboard.getBoardPosition(i))
             square[i] = document.getElementById(i);
             square[i].textContent = gameboard.getBoardPosition(i);
             if (square[i].textContent !== " ") {
