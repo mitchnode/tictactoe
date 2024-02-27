@@ -31,47 +31,51 @@ const gameboard = (function(){
 
 const playerX = {
     token : "X",
+    name: "Player 1",
     getToken(){
         return this.token;
+    },
+    getName(){
+        return this.name;
+    },
+    setName(name){
+        this.name = name;
     }
 }
 
 const playerO = {
     token : "O",
+    name: "Player 2",
     getToken(){
         return this.token;
+    },
+    getName(){
+        return this.name;
+    },
+    setName(name){
+        this.name = name;
     }
+
 }
 
 const game = {
     gameover : false,
     playerTurn : "X",
     roundCount : 1,
-    error : "",
     position : 0,
     initGame(){
         display.createGameboard();
     },
-    gameLoop(){
-        
-        /* while(this.gameover!=true){
-            //position = this.userInput(this.playerTurn);
-            if(this.playerTurn === "X"){
-                gameboard.placeToken(playerX, this.position);
-            } else {
-                gameboard.placeToken(playerO, this.position);
-            }
+    gameLoop(index){
+        if(game.checkPosition(index) == index){
+            gameboard.placeToken(this.getPlayerTurn(),index);
             display.displayGameboard();
-            if(this.error !== ""){
-                display.displayError();
-                break;
-            }
             this.checkGameover();
-            if(this.gameover !=true){
+            if (this.gameover == false){
                 this.changeTurn();
                 this.updateRound();
-            } 
-        } */
+            }
+        }
     },
     restartGame(){
         gameboard.resetBoard();
@@ -96,7 +100,7 @@ const game = {
         } else {
             this.playerTurn = "X";
         }
-        display.displayPlayer(this.playerTurn);
+        display.displayPlayer(this.getPlayerTurn());
     },
     getPlayerTurn(){
         if (this.playerTurn == "X"){
@@ -107,24 +111,6 @@ const game = {
     },
     updateRound(){
         this.roundCount += 1;
-    },
-    userInput(player){
-        let input = prompt(player + "'s turn, please choose a position (1-9)");
-        input = Number(input);
-        return this.checkInput(input, player);
-    },
-    checkInput(input, player){
-        if(input <= 9 && input >= 1){
-            return this.checkPosition(input - 1,player);
-        } else if (input === 0){
-            this.setError("Game Cancelled!");
-            this.gameover = true;
-        } else {
-            this.setError("Invalid entry");
-            display.displayError();
-            this.setError("");
-            return this.userInput(player);
-        }
     },
     checkPosition(position){
         if(game.gameover === false){
@@ -137,12 +123,6 @@ const game = {
                 return false;
             }
         }       
-    },
-    setError(error){
-        this.error = error;
-    },
-    getError(error){
-        return this.error;
     },
     checkWin(player){
         if((gameboard.getBoardPosition(0) == player && gameboard.getBoardPosition(1) == player && gameboard.getBoardPosition(2) == player) ||
@@ -169,9 +149,44 @@ const display = (function(){
         start.textContent = "START";
         start.addEventListener('click', function(){
             DOM.container.removeChild(start);
+            const player1 = document.getElementById("player1");
+            const player2 = document.getElementById("player2");
+            if (player1.value == ""){
+                playerX.setName(player1.placeholder);
+            }else {
+                playerX.setName(player1.value);
+            }
+            if (player2.value == ""){
+                playerO.setName(player2.placeholder);
+            }else {
+                playerO.setName(player2.value);
+            }
             game.initGame();
         })
         DOM.container.appendChild(start);
+        displayNameForm();
+    }
+
+    const displayNameForm = () => {
+        const p = document.createElement("p");
+        const player1 = document.createElement("input");
+        const player1label = document.createElement("label");
+        const player2 = document.createElement("input");
+        const player2label = document.createElement("label");
+        p.textContent = "Please enter player names and click start!";
+        player1.placeholder = playerX.getName();
+        player2.placeholder = playerO.getName();
+        player1.id = "player1";
+        player1label.htmlFor = "player1";
+        player1label.textContent = "Player 1 Name:";
+        player2.id = "player2";
+        player2label.htmlFor = "player2";
+        player2label.textContent = "Player 2 Name:";
+        DOM.info.appendChild(p);
+        DOM.info.appendChild(player1label);
+        DOM.info.appendChild(player1);
+        DOM.info.appendChild(player2label);
+        DOM.info.appendChild(player2);
     }
 
     const disableBoard = () => {
@@ -192,16 +207,14 @@ const display = (function(){
     const displayInfo = (info) => {
         DOM.info.innerHTML = "";
 
-        const gameinfo = document.createElement("div");
+        const gameinfo = document.createElement("p");
         gameinfo.classList = "gameinfo";
         gameinfo.textContent = info;
         DOM.info.appendChild(gameinfo);
     }
 
     const displayWinner = (player) => {
-        console.log("The Winner is " + player + "!");
-
-        displayInfo(player + " Wins!");
+        displayInfo(game.getPlayerTurn().getName() + " Wins!");
         disableBoard();
     }
 
@@ -212,12 +225,8 @@ const display = (function(){
         disableBoard();
     }
 
-    const displayError = () => {
-        console.log(game.getError());
-    }
-
-    const displayPlayer = (playerTurn) => {
-        displayInfo(playerTurn + "'s Turn");
+    const displayPlayer = (player) => {
+        displayInfo(player.getName() + "'s Turn (" + player.getToken() + ")");
     }
     
     const createGameboard = () => {
@@ -228,28 +237,15 @@ const display = (function(){
             position[i].classList = "square";
             let index = i;
             position[i].addEventListener('click', () => {
-                if(game.checkPosition(index) == index){
-                    gameboard.placeToken(game.getPlayerTurn(),index);
-                    displayGameboard();
-                    game.changeTurn();
-                    game.checkGameover();
-                    game.updateRound();
-                }
+                game.gameLoop(index);
             });
             DOM.container.appendChild(position[i]);
         }
-        displayPlayer(game.getPlayerTurn().getToken());
+        displayPlayer(game.getPlayerTurn());
 
     }
 
     const displayGameboard = () => {
-        /* console.clear();
-        console.log(gameboard.getBoardPosition(0)," | ",gameboard.getBoardPosition(1)," | ",gameboard.getBoardPosition(2));
-        console.log("--- ----- ---");
-        console.log(gameboard.getBoardPosition(3)," | ",gameboard.getBoardPosition(4)," | ",gameboard.getBoardPosition(5));
-        console.log("--- ----- ---");
-        console.log(gameboard.getBoardPosition(6)," | ",gameboard.getBoardPosition(7)," | ",gameboard.getBoardPosition(8)); */
-
         const square = [];
         for (i = 0; i < gameboard.getBoardLength(); i++){
             square[i] = document.getElementById(i);
@@ -261,7 +257,7 @@ const display = (function(){
         }
     }
 
-    return {initDisplay, displayWinner, displayTie, displayError, displayPlayer, createGameboard, displayGameboard}
+    return {initDisplay, displayWinner, displayTie, displayPlayer, createGameboard, displayGameboard}
 })();
 
 display.initDisplay();
